@@ -1,0 +1,197 @@
+// J64720.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+void printCurrentCoordinates(int X, int Y);
+void movePlayer(char whereNext);
+const int GridY = 10;
+const int GridX = 10;
+int player_Y = 9; // current y coordinate for player. Player starts at x = 1, y = 1.
+int player_X = 8; // current x coordinate for player
+int player_next_X;
+int player_next_Y;
+vector<string>::const_iterator iter;
+vector<string>Infantory;
+string item;
+
+class Player
+{
+	int startLives = 5;
+	int livesRemaining;
+	string name;
+
+public:
+	Player() { name = "Player";  livesRemaining = startLives; }
+	Player(string PlayerName, int NoOfLives)
+	{
+		name = PlayerName;
+		livesRemaining = NoOfLives = startLives;
+	}
+	void die()
+	{
+		if (livesRemaining > 0)
+		{
+			livesRemaining--;
+		}
+		else
+		{
+			cout << "GAME OVER\n";
+		}
+	}
+	void resurrection() { livesRemaining = startLives; }
+	bool isAlive() { return (livesRemaining > 0); }
+
+	void newGame()
+	{
+		resurrection();
+	}
+
+	string getPlayerName() { return name; }
+
+	void showPlayerDetails()
+	{
+		cout << "Your name is " << name << endl;
+		cout << "Initial lives: " << startLives << " \nLives remaining: " << livesRemaining << endl;
+	}
+};
+
+
+char caveGrid[GridY][GridX] = { {'R','R','B','O','O','O','O','D','R','T'},
+						{'K','R','B','O','B','B','B','B','B','B'},
+						{'B','L','B','O','O','O','O','D','O','K'},
+						{'O','O','O','O','T','B','O','B','B','B'},
+						{'O','B','B','B','B','B','O','O','O','O'},
+						{'O','B','R','R','B','O','O','B','B','O'},
+						{'O','B','D','B','B','O','B','O','O','O'},
+						{'O','O','O','O','B','O','B','D','B','B'},
+						{'B','B','B','O','O','O','B','R','R','R'},
+						{'O','O','D','O','T','O','B','R','R','R'} };
+
+int main()
+{	
+	string name;
+	cout << "please enter your name." << endl;
+	cin >> name;
+	Player plyr1 = Player(name,5);
+	plyr1.showPlayerDetails();
+	Infantory.push_back("flashlight");
+	char nextDirection;
+	char carryOn = 'y';
+	do {
+		printCurrentCoordinates(player_X, player_Y);
+		cout << "Where would you like to go next? " << endl;
+		cout << "Type: \nN for North,\nS for South, \nW for West, \nE for East" << endl;
+		cin >> nextDirection;
+		movePlayer(nextDirection);
+		cout << "Do you want to continue? (y,n)";
+		cin >> carryOn;
+		cout << endl << endl;
+	} while (carryOn == 'y');
+	
+	system("pause");
+    return 0;
+}
+
+void printCurrentCoordinates(int X, int Y)
+//Tell user where they are at the moment
+// Starts at x = 1, y = 1
+{
+	cout << "Your current X coordinate is: " << X << "." << endl;
+	cout << "Your current Y coordinate is " << Y << "." << endl;
+	char currentSpaceType = caveGrid[Y][X];
+	switch (currentSpaceType) {
+	case 'O':
+		cout << "You are in the main hallways." << endl;
+		break;
+	case 'R':
+		cout << "You are in a room." << endl;
+		break;
+	case 'K':
+		cout << "You have found a key." << endl;
+		Infantory.push_back("Key");
+		cout << "The key has been added to your infantory." << endl;
+		caveGrid[player_Y][player_X] = 'O';
+		break;
+	case 'T':
+		cout << "You have fell into a trap." << endl;
+		break;
+	case 'D':
+		cout << "You have just walked through a door." << endl;
+	case 'L':
+		cout << "This door is locked. you require a key." << endl;
+		iter = find(Infantory.begin(), Infantory.end(), "Key");
+		if (iter != Infantory.end())
+		{
+			cout << "The door is unlocked." << endl;
+			caveGrid[player_Y][player_X] = 'D';
+		}
+		else
+		{
+			cout << "Score not found. \n";
+		}
+	}
+}
+
+	void movePlayer(char whereNext) {
+
+		// L = same row, X - 1
+		// R = same row, X + 1
+		// U = Y - 1, same column. Up the screen = down the array.
+		// D = Y + 1, same column Down the screen = up the array.
+		if (caveGrid[player_Y][player_X] == 'B')
+		{
+			cout << "Can't move that way. there is a wall.\nGo another way." << endl;
+		}
+
+		else if ((caveGrid[player_Y][player_X] = 'L') && (iter != Infantory.end()))
+		{
+			cout << " The door is locked.\nYou need a key to unlock this door." << endl;
+		}
+		switch (whereNext) {
+		case 'n':
+		case 'N':
+			player_next_Y = player_Y - 1;
+			if ((player_next_Y >= 0) && (player_next_Y < GridY))
+				player_Y = player_next_Y;
+			else
+				cout << "Move not possible!" << endl;
+			printCurrentCoordinates(player_X, player_Y);
+			break;
+		case 's':
+		case 'S':
+			player_next_Y = player_Y + 1;
+			if ((player_next_Y >= 0) && (player_next_Y < GridY))
+				player_Y = player_next_Y;
+			else
+				cout << "Move not possible!" << endl;
+			printCurrentCoordinates(player_X, player_Y);
+			break;
+		case 'w':
+		case 'W':
+			player_next_X = player_X - 1;
+			if ((player_next_X >= 0) && (player_next_X < GridX))
+				player_X = player_next_X;
+			else
+				cout << "Move not possible!" << endl;
+			printCurrentCoordinates(player_X, player_Y);
+			break;
+		case 'e':
+		case 'E':
+			player_next_X = player_X + 1;
+			if ((player_next_X >= 0) && (player_next_X < GridX))
+				player_X = player_next_X;
+			else
+				cout << "Move not possible!" << endl;
+			printCurrentCoordinates(player_X, player_Y);
+			break;
+		default:
+			cout << "Can't calculate next location" << endl;
+			break;
+		}
+	}
